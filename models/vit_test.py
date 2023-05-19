@@ -1,23 +1,21 @@
 import numpy as np
-import os
+
 from tqdm import tqdm, trange
+
 import torch
 import torch.nn as nn
-from torch.utils.data import DataLoader
 from torch.optim import Adam
-from torchvision.transforms import ToTensor
 from torch.nn import CrossEntropyLoss
+from torch.utils.data import DataLoader
+
+from torchvision.transforms import ToTensor
 from torchvision.datasets.mnist import MNIST
 from dataloader import getDataLoader
-
 np.random.seed(0)
 torch.manual_seed(0)
 
-## assumptions on inputs
-# H == W
 
-
-def image_to_patch(imgs, n_patch):
+def patchify(imgs, n_patch):
     n, c, h, w = imgs.shape  # num_imgs, channel, img_w, img_h
     assert h == w  # works only for square images
     total_patches = n_patch * n_patch
@@ -41,20 +39,10 @@ def image_to_patch(imgs, n_patch):
     return patches
 
 
-def embed_position(num_tokens, hid_d):
-    pos_embed = torch.ones(num_tokens, hid_d)
-    for i in range(num_tokens):
-        for j in range(hid_d):
-            if j % 2 == 0:
-                pos_embed[i][j] = np.sin(i / (10000 ** (j / hid_d)))
-            else:
-                pos_embed[i][j] = np.cos(i / (10000 ** ((j - 1) / hid_d)))
-    return pos_embed
 
-
-class MSA(nn.Module):
+class MyMSA(nn.Module):
     def __init__(self, hid_d, n_heads=2):
-        super(MSA, self).__init__()
+        super(MyMSA, self).__init__()
         self.hid_d = hid_d
         self.n_heads = n_heads
         assert (
@@ -76,7 +64,7 @@ class MSA(nn.Module):
         )
         # Softmax
         self.softmax = nn.Softmax(dim=-1)
-
+    
     def forward(self, sequences):
         # Sequences has shape (N, seq_length, token_dim)
         # We go into shape    (N, seq_length, n_heads, token_dim / n_heads)
@@ -85,13 +73,12 @@ class MSA(nn.Module):
         for sequence in sequences:
             seq_result = []
             for head in range(self.n_heads):
-                q_mapping = self.q_map[head]
-                k_mapping = self.k_map[head]
-                v_mapping = self.v_map[head]
-                seq = sequence[
-                    :, head * self.dim_per_head : (head + 1) * self.dim_per_head
-                ]
-                q, k, v = q_mapping(seq), k_mapping(seq), v_mapping(seq)
+                q_map = self.q_map[head]
+                k_map = self.k_map[head]
+                v_map = self.v_map[head]
+
+                seq = sequence[:, head * self.dim_per_head : (head + 1) * self.dim_per_head]
+                q, k, v = q_map(seq), k_map(seq), v_map(seq)
 
                 attention = self.softmax(q @ k.T / (self.dim_per_head**0.5))
                 seq_result.append(attention @ v)
@@ -106,12 +93,12 @@ class MyViTBlock(nn.Module):
         self.n_heads = n_heads
 
         self.norm1 = nn.LayerNorm(hidden_d)
-        self.mhsa = MSA(hidden_d, n_heads)
+        self.mhsa = MyMSA(hidden_d, n_heads)
         self.norm2 = nn.LayerNorm(hidden_d)
         self.mlp = nn.Sequential(
             nn.Linear(hidden_d, mlp_ratio * hidden_d),
             nn.GELU(),
-            nn.Linear(mlp_ratio * hidden_d, hidden_d),
+            nn.Linear(mlp_ratio * hidden_d, hidden_d)
         )
 
     def forward(self, x):
@@ -120,7 +107,7 @@ class MyViTBlock(nn.Module):
         return out
 
 
-class ViT(nn.Module):
+class MyViT(nn.Module):
     def __init__(
         self,
         img_shape=(1, 28, 28),
@@ -130,7 +117,7 @@ class ViT(nn.Module):
         n_blocks=2,
         out_d=10,
     ):
-        super(ViT, self).__init__()
+        super(MyViT, self).__init__()
 
         # Attributes
         self.img_shape = img_shape  # (C, H, W)
@@ -154,7 +141,7 @@ class ViT(nn.Module):
 
         # Get positional embeddings for each patch with 50 tokens
         self.pos_embed = nn.Parameter(
-            torch.tensor(embed_position(self.n_patch**2 + 1, self.hidden_d))
+            torch.tensor(get_positional_embeddings(self.n_patch**2 + 1, self.hidden_d))
         )
         self.pos_embed.requires_grad = False
 
@@ -166,45 +153,59 @@ class ViT(nn.Module):
         # Classification MLPk
         self.mlp = nn.Sequential(nn.Linear(self.hidden_d, out_d), nn.Softmax(dim=-1))
 
-    def forward(self, img):
-        n, c, h, w = img.shape
-        patches = image_to_patch(img, self.n_patch).to(self.pos_embed.device)
-        img_tokens = self.linear_mapper(patches)
-
+    def forward(self, images):
+        # Dividing images into patches
+        n, c, h, w = images.shape
+        patches = patchify(images, self.n_patch).to(self.pos_embed.device)
+        
+        # Running linear layer tokenization
+        # Map the vector corresponding to each patch to the hidden size dimension
+        tokens = self.linear_mapper(patches)
+        
         # Adding classification token to the tokens
-        cat_tokens = []
-        for i in range(len(img_tokens)):
-            cat_tokens.append(torch.vstack((self.cls_token, img_tokens[i])))
-        tokens = torch.stack(cat_tokens)
-
+        tokens = torch.cat((self.cls_token.expand(n, 1, -1), tokens), dim=1)
+        
         # Adding positional embedding
         out = tokens + self.pos_embed.repeat(n, 1, 1)
-
+        
         # Transformer Blocks
         for block in self.blocks:
             out = block(out)
-
+            
         # Getting the classification token only
         out = out[:, 0]
-        return self.mlp(out)
+        
+        return self.mlp(out) # Map to output dimension, output category distribution
+    
+
+
+def get_positional_embeddings(num_tokens, hid_d):
+    pos_embed = torch.ones(num_tokens, hid_d)
+    for i in range(num_tokens):
+        for j in range(hid_d):
+            if j % 2 == 0:
+                pos_embed[i][j] = np.sin(i / (10000 ** (j / hid_d)))
+            else:
+                pos_embed[i][j] = np.cos(i / (10000 ** ((j - 1) / hid_d)))
+    return pos_embed
 
 
 def main():
     # Loading data
+    # transform = ToTensor()
+
+    # train_set = MNIST(root='./../datasets', train=True, download=True, transform=transform)
+    # test_set = MNIST(root='./../datasets', train=False, download=True, transform=transform)
+    
+    # train_loader = DataLoader(train_set, shuffle=True, batch_size=128)
+    # test_loader = DataLoader(test_set, shuffle=False, batch_size=128)
+
     train_loader, val_loader, test_loader = getDataLoader("cifar", batch_size=1)
 
     # Defining model and training options
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(
-        "Using device: ",
-        device,
-        f"({torch.cuda.get_device_name(device)})" if torch.cuda.is_available() else "",
-    )
-
-    model = ViT(
-        (3, 224, 224), n_patch=7, n_blocks=2, hidden_d=8, n_heads=2, out_d=10
-    ).to(device)
-
+    print("Using device: ", device, f"({torch.cuda.get_device_name(device)})" if torch.cuda.is_available() else "")
+    model = MyViT((3, 224, 224), n_patch=7, n_blocks=2, hidden_d=8, n_heads=2, out_d=10).to(device)
     N_EPOCHS = 5
     LR = 0.005
 
@@ -213,9 +214,7 @@ def main():
     criterion = CrossEntropyLoss()
     for epoch in trange(N_EPOCHS, desc="Training"):
         train_loss = 0.0
-        for batch in tqdm(
-            train_loader, desc=f"Epoch {epoch + 1} in training", leave=False
-        ):
+        for batch in tqdm(train_loader, desc=f"Epoch {epoch + 1} in training", leave=False):
             x, y = batch
             x, y = x.to(device), y.to(device)
             y_hat = model(x)
@@ -246,19 +245,5 @@ def main():
         print(f"Test accuracy: {correct / total * 100:.2f}%")
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
-
-##############################
-# class ViT(nn.Module):
-#     def __init__(self, *, img_size, patch_size, num_classes, dim, depth, heads, mlp_dim, pool='cls', num_ch=3, dimm_head=64, dropout=0., emb_dropout=0.):
-#         super().__init__()
-#         img_h, img_w = (img_size, img_size)
-#         patch_h, patch_w = (patch_size, patch_size)
-
-#         assert img_h % patch_h == 0 and img_w % patch_w == 0, 'Image dimensions must be divisible by the patch size.'
-#         n_patches = (img_h // patch_h) * (img_w // patch_w)
-
-#         patch_dim = num_ch * patch_h * patch_w
-
-#     # def forward(self, img):
