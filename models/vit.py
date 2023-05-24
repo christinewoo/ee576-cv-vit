@@ -1,17 +1,20 @@
 import numpy as np
-import os
 from tqdm import tqdm, trange
 import torch
 import torch.nn as nn
-from torch.utils.data import DataLoader
 from torch.optim import Adam
-from torchvision.transforms import ToTensor
 from torch.nn import CrossEntropyLoss
+
+from torchvision.transforms import ToTensor
 from torchvision.datasets.mnist import MNIST
+
 from dataloader import getDataLoader
 
 np.random.seed(0)
 torch.manual_seed(0)
+
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = '0'
 
 ## assumptions on inputs
 # H == W
@@ -162,6 +165,9 @@ class ViT(nn.Module):
         self.blocks = nn.ModuleList(
             [MyViTBlock(hidden_d, n_heads) for _ in range(n_blocks)]
         )
+        
+        # Residual?
+        # self.to_latent = nn.Identity()
 
         # Classification MLPk
         self.mlp = nn.Sequential(nn.Linear(self.hidden_d, out_d), nn.Softmax(dim=-1))
@@ -186,12 +192,16 @@ class ViT(nn.Module):
 
         # Getting the classification token only
         out = out[:, 0]
+        
+        # Residual
+        # out = self.to_latent(out)
+        
         return self.mlp(out)
 
 
 def main():
     # Loading data
-    train_loader, val_loader, test_loader = getDataLoader("cifar", batch_size=1)
+    train_loader, val_loader, test_loader = getDataLoader("cifar", batch_size=32)
 
     # Defining model and training options
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -201,21 +211,20 @@ def main():
         f"({torch.cuda.get_device_name(device)})" if torch.cuda.is_available() else "",
     )
 
+    #(3, 224, 224)
     model = ViT(
-        (3, 224, 224), n_patch=7, n_blocks=2, hidden_d=8, n_heads=2, out_d=10
+        (3, 32, 32), n_patch=8, n_blocks=6, hidden_d=64, n_heads=2, out_d=10
     ).to(device)
 
-    N_EPOCHS = 5
-    LR = 0.005
+    N_EPOCHS = 25
+    LR = 0.001
 
     # Training loop
     optimizer = Adam(model.parameters(), lr=LR)
     criterion = CrossEntropyLoss()
     for epoch in trange(N_EPOCHS, desc="Training"):
         train_loss = 0.0
-        for batch in tqdm(
-            train_loader, desc=f"Epoch {epoch + 1} in training", leave=False
-        ):
+        for batch in tqdm(train_loader, desc=f"Epoch {epoch + 1} in training", leave=False):
             x, y = batch
             x, y = x.to(device), y.to(device)
             y_hat = model(x)

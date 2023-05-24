@@ -3,12 +3,14 @@ from PIL import Image
 from torchvision.datasets import CIFAR10
 from torch.utils.data import random_split
 from torchvision import transforms
-
+import numpy as np
+import pandas as pd
 
 class celebA(Dataset):
-    def __init__(self, file_list, transform=None):
+    def __init__(self, file_list, label_list, transform=None):
         self.file_list = file_list
         self.transform = transform
+        self.label_list = label_list.values
 
     def __len__(self):
         self.filelength = len(self.file_list)
@@ -17,7 +19,12 @@ class celebA(Dataset):
     def __getitem__(self, idx):
         img_path ="/home/xtreme/runs/data/celeba/img/" + str(self.file_list[idx])
         img = Image.open(img_path)
-        return img
+        img_transformed = self.transform(img)
+        label_index = self.file_list[idx].split('.')
+        label_index = label_index[0]
+        label_index = int(label_index)
+        label = self.label_list[label_index-1, 1]
+        return img_transformed, label
 
 # Input: the name of dataset (celebA or cifar)
 # Output: the Dataset of specific dataset
@@ -29,7 +36,8 @@ def getTrainDataset(dataset_name, transform):
         with open(list_path, 'r') as f:
             lines = f.readlines()
             file_list = [line.strip() for line in lines]
-            train_data = celebA(file_list=file_list, transform=transform)
+            label_list = pd.read_csv("/home/xtreme/runs/data/celeba/anno/identity_CelebA.txt", sep=" ", header=None)
+            train_data = celebA(file_list=file_list, label_list = label_list, transform=transform)
             return train_data
     else:
         dataset = CIFAR10(root='/home/xtreme/runs/data/cifar10/', download=True, transform=transform)
@@ -43,7 +51,8 @@ def getValDataset(dataset_name, transform):
         with open(list_path, 'r') as f:
             lines = f.readlines()
             file_list = [line.strip() for line in lines]
-            val_data = celebA(file_list=file_list, transform=transform)
+            label_list = pd.read_csv("/home/xtreme/runs/data/celeba/anno/identity_CelebA.txt", sep=" ", header=None)
+            val_data = celebA(file_list=file_list, label_list = label_list, transform=transform)
             return val_data
     else:
         return None
@@ -54,7 +63,8 @@ def getTestDataset(dataset_name, transform):
         with open(list_path, 'r') as f:
             lines = f.readlines()
             file_list = [line.strip() for line in lines]
-            test_data = celebA(file_list=file_list, transform=transform)
+            label_list = pd.read_csv("/home/xtreme/runs/data/celeba/anno/identity_CelebA.txt", sep=" ", header=None)
+            test_data = celebA(file_list=file_list, label_list = label_list, transform=transform)
             return test_data
     else:
         dataset = CIFAR10(root='/home/xtreme/runs/data/cifar10/', train=False, transform=transform)
@@ -64,9 +74,9 @@ def getDataLoader(dataset_name, batch_size=1):
     if dataset_name == "celebA":
         celebA_train_transforms = transforms.Compose(
             [
-                transforms.RandomResizedCrop(178),
+                transforms.RandomResizedCrop(178), # can try padding later
                 transforms.Resize((224, 224)),
-                transforms.ToTensor(),
+                transforms.ToTensor(), # maybe can add norm for convergence
             ]
         )
         celebA_test_transforms = transforms.Compose(
@@ -82,19 +92,24 @@ def getDataLoader(dataset_name, batch_size=1):
         test_dataset = getTestDataset(dataset_name, celebA_test_transforms)
         train_loader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
         val_loader = DataLoader(dataset=val_dataset, batch_size=batch_size, shuffle=True)
-        test_loader = DataLoader(dataset=test_dataset, batch_size=batch_size, shuffle=True)
+        test_loader = DataLoader(dataset=test_dataset, batch_size=batch_size, shuffle=False) # mod
         return train_loader, val_loader, test_loader
     else:
         cifar_train_transforms = transforms.Compose(
             [
-                transforms.Resize((224, 224)),
+                # transforms.Resize((224, 224)),
+                # transforms.ToTensor(),
+                transforms.RandomCrop(32, padding=4),
+                transforms.Resize((32, 32)),
                 transforms.ToTensor(),
+                transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
             ]
         )
         cifar_test_transforms = transforms.Compose(
             [
-                transforms.Resize((224, 224)),
+                # transforms.Resize((224, 224)),
                 transforms.ToTensor(),
+                transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))
             ]
         )
         train_dataset = getTrainDataset(dataset_name, cifar_train_transforms)
