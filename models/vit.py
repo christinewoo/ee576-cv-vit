@@ -258,16 +258,3 @@ def main():
 if __name__ == "__main__":
     main()
 
-##############################
-# class ViT(nn.Module):
-#     def __init__(self, *, img_size, patch_size, num_classes, dim, depth, heads, mlp_dim, pool='cls', num_ch=3, dimm_head=64, dropout=0., emb_dropout=0.):
-#         super().__init__()
-#         img_h, img_w = (img_size, img_size)
-#         patch_h, patch_w = (patch_size, patch_size)
-
-#         assert img_h % patch_h == 0 and img_w % patch_w == 0, 'Image dimensions must be divisible by the patch size.'
-#         n_patches = (img_h // patch_h) * (img_w // patch_w)
-
-#         patch_dim = num_ch * patch_h * patch_w
-
-#     # def forward(self, img):

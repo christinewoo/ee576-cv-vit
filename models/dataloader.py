@@ -6,6 +6,41 @@ from torchvision import transforms
 import numpy as np
 import pandas as pd
 
+dir_anno = "/home/xtreme/runs/data/celeba/anno/"
+
+def get_annotation(fnmtxt, verbose=True):
+    if verbose:
+        print("_"*70)
+        print(fnmtxt)
+    
+    rfile = open( dir_anno + fnmtxt , 'r' ) 
+    texts = rfile.read().split("\n") 
+    rfile.close()
+
+    columns = np.array(texts[1].split(" "))
+    columns = columns[columns != ""]
+    df = []
+    for txt in texts[2:]:
+        txt = np.array(txt.split(" "))
+        txt = txt[txt!= ""]
+    
+        df.append(txt)
+        
+    df = pd.DataFrame(df)
+
+    if df.shape[1] == len(columns) + 1:
+        columns = ["image_id"]+ list(columns)
+    df.columns = columns   
+    df = df.dropna()
+    if verbose:
+        print(" Total number of annotations {}\n".format(df.shape))
+        print(df.head())
+    ## cast to integer
+    for nm in df.columns:
+        if nm != "image_id":
+            df[nm] = pd.to_numeric(df[nm],downcast="integer")
+    return(df)
+
 class celebA(Dataset):
     def __init__(self, file_list, label_list, transform=None):
         self.file_list = file_list
@@ -20,11 +55,7 @@ class celebA(Dataset):
         img_path ="/home/xtreme/runs/data/celeba/img/" + str(self.file_list[idx])
         img = Image.open(img_path)
         img_transformed = self.transform(img)
-        label_index = self.file_list[idx].split('.')
-        label_index = label_index[0]
-        label_index = int(label_index)
-        label = self.label_list[label_index-1, 1]
-        return img_transformed, label
+        return img_transformed, self.label_list[idx]
 
 # Input: the name of dataset (celebA or cifar)
 # Output: the Dataset of specific dataset
@@ -36,8 +67,8 @@ def getTrainDataset(dataset_name, transform):
         with open(list_path, 'r') as f:
             lines = f.readlines()
             file_list = [line.strip() for line in lines]
-            label_list = pd.read_csv("/home/xtreme/runs/data/celeba/anno/identity_CelebA.txt", sep=" ", header=None)
-            train_data = celebA(file_list=file_list, label_list = label_list, transform=transform)
+            label_list = get_annotation("list_attr_celeba.txt")
+            train_data = celebA(file_list=file_list, label_list = label_list['Male'], transform=transform)
             return train_data
     else:
         dataset = CIFAR10(root='/home/xtreme/runs/data/cifar10/', download=True, transform=transform)
@@ -51,8 +82,8 @@ def getValDataset(dataset_name, transform):
         with open(list_path, 'r') as f:
             lines = f.readlines()
             file_list = [line.strip() for line in lines]
-            label_list = pd.read_csv("/home/xtreme/runs/data/celeba/anno/identity_CelebA.txt", sep=" ", header=None)
-            val_data = celebA(file_list=file_list, label_list = label_list, transform=transform)
+            label_list = get_annotation("list_attr_celeba.txt")
+            val_data = celebA(file_list=file_list, label_list = label_list['Male'], transform=transform)
             return val_data
     else:
         return None
@@ -63,8 +94,8 @@ def getTestDataset(dataset_name, transform):
         with open(list_path, 'r') as f:
             lines = f.readlines()
             file_list = [line.strip() for line in lines]
-            label_list = pd.read_csv("/home/xtreme/runs/data/celeba/anno/identity_CelebA.txt", sep=" ", header=None)
-            test_data = celebA(file_list=file_list, label_list = label_list, transform=transform)
+            label_list = get_annotation("list_attr_celeba.txt")
+            test_data = celebA(file_list=file_list, label_list = label_list['Male'], transform=transform)
             return test_data
     else:
         dataset = CIFAR10(root='/home/xtreme/runs/data/cifar10/', train=False, transform=transform)
@@ -77,6 +108,7 @@ def getDataLoader(dataset_name, batch_size=1):
                 transforms.RandomResizedCrop(178), # can try padding later
                 transforms.Resize((224, 224)),
                 transforms.ToTensor(), # maybe can add norm for convergence
+                transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
             ]
         )
         celebA_test_transforms = transforms.Compose(
@@ -84,6 +116,7 @@ def getDataLoader(dataset_name, batch_size=1):
                 transforms.RandomResizedCrop(178),
                 transforms.Resize((224, 224)),
                 transforms.ToTensor(),
+                transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
             ]
         )
 

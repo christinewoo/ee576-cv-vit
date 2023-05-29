@@ -212,11 +212,11 @@ def main():
 
     #(3, 224, 224)
     model = ViT(    #16x16
-        (3, 224, 224), n_patch=7, n_blocks=6, hidden_d=64, n_heads=2, out_d=10
+        (3, 224, 224), n_patch=7, n_blocks=4, hidden_d=32, n_heads=2, out_d=2
     ).to(device)
 
     N_EPOCHS = 25
-    LR = 0.001
+    LR = 0.002
 
     # Training loop
     optimizer = Adam(model.parameters(), lr=LR)
@@ -225,6 +225,7 @@ def main():
         train_loss = 0.0
         for batch in tqdm(train_loader, desc=f"Epoch {epoch + 1} in training", leave=False):
             x, y = batch
+            # y = torch.from_numpy(np.ones(32, dtype=int))
             x, y = x.to(device), y.to(device)
             y_hat = model(x)
             loss = criterion(y_hat, y)
@@ -256,17 +257,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-##############################
-# class ViT(nn.Module):
-#     def __init__(self, *, img_size, patch_size, num_classes, dim, depth, heads, mlp_dim, pool='cls', num_ch=3, dimm_head=64, dropout=0., emb_dropout=0.):
-#         super().__init__()
-#         img_h, img_w = (img_size, img_size)
-#         patch_h, patch_w = (patch_size, patch_size)
-
-#         assert img_h % patch_h == 0 and img_w % patch_w == 0, 'Image dimensions must be divisible by the patch size.'
-#         n_patches = (img_h // patch_h) * (img_w // patch_w)
-
-#         patch_dim = num_ch * patch_h * patch_w
-
-#     # def forward(self, img):
