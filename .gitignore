@@ -1,3 +1,7 @@
 .history/
 pretrained/
 */__pycache__/
+*.ckpt
+*.txt
+models/logs/
+.vscode/
