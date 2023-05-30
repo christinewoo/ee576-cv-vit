@@ -201,7 +201,7 @@ class ViT(nn.Module):
 def main():
     # Loading data
     # train_loader, val_loader, test_loader = getDataLoader("celebA", batch_size=32)
-    train_loader, test_loader = getDataLoader("pokemon", batch_size=32)
+    train_loader, test_loader = getDataLoader("pokemon", batch_size=8)
 
     # Defining model and training options
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -212,10 +212,10 @@ def main():
     )
 
     #(3, 224, 224) 16x16
-    model = ViT((3, 224, 224), n_patch=7, n_blocks=4, hidden_d=32, n_heads=2, out_d=150).to(device)
+    model = ViT((3, 224, 224), n_patch=16, n_blocks=4, hidden_d=256, n_heads=8, out_d=150).to(device)
 
     N_EPOCHS = 25
-    LR = 0.002
+    LR = 0.0002
 
     # Training loop
     optimizer = Adam(model.parameters(), lr=LR)

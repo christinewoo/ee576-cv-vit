@@ -172,12 +172,13 @@ def getDataLoader(dataset_name, batch_size=1):
         test_loader = DataLoader(dataset=test_dataset, batch_size=batch_size, shuffle=True)
         return train_loader, val_loader, test_loader
     else:
+        print("using pokemon")
         stats = ((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
         pokemon_train_transforms = transforms.Compose(
             [
-                transforms.Resize((224)),#debug
+                transforms.Resize((320, 320)),#debug
                 transforms.RandomHorizontalFlip(),
-                transforms.RandomCrop((224)),
+                transforms.RandomCrop((224, 224)),
                 transforms.RandomPerspective(),
                 transforms.RandomRotation(20),
                 transforms.ToTensor(), 
@@ -197,7 +198,7 @@ def getDataLoader(dataset_name, batch_size=1):
         #         transforms.Normalize(*stats),
         #     ]
         # )
-        dataset = ImageFolder("/home/xtreme/runs/data/pokemon/", pokemon_train_transforms)
+        dataset = ImageFolder("C:/study/ee576/project/data/PokemonData", pokemon_train_transforms)
         random_seed = 80
         manual_seed(random_seed)
 
