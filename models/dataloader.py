@@ -5,10 +5,15 @@ from torch.utils.data import random_split
 from torchvision import transforms
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
+from torchvision.datasets import ImageFolder
+from torch import manual_seed
+from math import floor
 
 dir_anno = "/home/xtreme/runs/data/celeba/anno/"
 
-def get_annotation(fnmtxt, verbose=True):
+def get_annotation(fnmtxt, verbose=False):
+    print('Obtaining annotations')
     if verbose:
         print("_"*70)
         print(fnmtxt)
@@ -20,7 +25,7 @@ def get_annotation(fnmtxt, verbose=True):
     columns = np.array(texts[1].split(" "))
     columns = columns[columns != ""]
     df = []
-    for txt in texts[2:]:
+    for txt in tqdm(texts[2:]):
         txt = np.array(txt.split(" "))
         txt = txt[txt!= ""]
     
@@ -55,7 +60,16 @@ class celebA(Dataset):
         img_path ="/home/xtreme/runs/data/celeba/img/" + str(self.file_list[idx])
         img = Image.open(img_path)
         img_transformed = self.transform(img)
-        return img_transformed, self.label_list[idx]
+        # label = self.label_list[idx]
+        # if label == -1:
+        #     label = 0
+        label_index = self.file_list[idx].split('.')
+        label_index = label_index[0]
+        label_index = int(label_index)
+        label = self.label_list[label_index-1, 1]
+        return img_transformed, int(label) #int(self.label_list[idx])
+
+
 
 # Input: the name of dataset (celebA or cifar)
 # Output: the Dataset of specific dataset
@@ -67,10 +81,11 @@ def getTrainDataset(dataset_name, transform):
         with open(list_path, 'r') as f:
             lines = f.readlines()
             file_list = [line.strip() for line in lines]
-            label_list = get_annotation("list_attr_celeba.txt")
-            train_data = celebA(file_list=file_list, label_list = label_list['Male'], transform=transform)
+            # label_list = get_annotation("list_attr_celeba.txt")
+            label_list = pd.read_csv("/home/xtreme/runs/data/celeba/anno/identity_CelebA.txt", sep=" ", header=None)
+            train_data = celebA(file_list=file_list, label_list = label_list, transform=transform)
             return train_data
-    else:
+    elif dataset_name == "cifar":
         dataset = CIFAR10(root='/home/xtreme/runs/data/cifar10/', download=True, transform=transform)
         return dataset
     
@@ -82,8 +97,9 @@ def getValDataset(dataset_name, transform):
         with open(list_path, 'r') as f:
             lines = f.readlines()
             file_list = [line.strip() for line in lines]
-            label_list = get_annotation("list_attr_celeba.txt")
-            val_data = celebA(file_list=file_list, label_list = label_list['Male'], transform=transform)
+            # label_list = get_annotation("list_attr_celeba.txt")
+            label_list = pd.read_csv("/home/xtreme/runs/data/celeba/anno/identity_CelebA.txt", sep=" ", header=None)
+            val_data = celebA(file_list=file_list, label_list = label_list, transform=transform)
             return val_data
     else:
         return None
@@ -94,8 +110,9 @@ def getTestDataset(dataset_name, transform):
         with open(list_path, 'r') as f:
             lines = f.readlines()
             file_list = [line.strip() for line in lines]
-            label_list = get_annotation("list_attr_celeba.txt")
-            test_data = celebA(file_list=file_list, label_list = label_list['Male'], transform=transform)
+            # label_list = get_annotation("list_attr_celeba.txt")
+            label_list = pd.read_csv("/home/xtreme/runs/data/celeba/anno/identity_CelebA.txt", sep=" ", header=None)
+            test_data = celebA(file_list=file_list, label_list = label_list, transform=transform)
             return test_data
     else:
         dataset = CIFAR10(root='/home/xtreme/runs/data/cifar10/', train=False, transform=transform)
@@ -127,7 +144,7 @@ def getDataLoader(dataset_name, batch_size=1):
         val_loader = DataLoader(dataset=val_dataset, batch_size=batch_size, shuffle=True)
         test_loader = DataLoader(dataset=test_dataset, batch_size=batch_size, shuffle=False) # mod
         return train_loader, val_loader, test_loader
-    else:
+    elif dataset_name == "cifar":
         cifar_train_transforms = transforms.Compose(
             [
                 # transforms.Resize((224, 224)),
@@ -154,6 +171,49 @@ def getDataLoader(dataset_name, batch_size=1):
         val_loader = DataLoader(dataset=val_ds, batch_size=batch_size, shuffle=True)
         test_loader = DataLoader(dataset=test_dataset, batch_size=batch_size, shuffle=True)
         return train_loader, val_loader, test_loader
+    else:
+        stats = ((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+        pokemon_train_transforms = transforms.Compose(
+            [
+                transforms.Resize((224)),#debug
+                transforms.RandomHorizontalFlip(),
+                transforms.RandomCrop((224)),
+                transforms.RandomPerspective(),
+                transforms.RandomRotation(20),
+                transforms.ToTensor(), 
+                transforms.Normalize(*stats,inplace=True)
+            ]
+        )
+        # pokemon_val_transfroms = transforms.Compose(
+        #     [
+        #         transforms.ToTensor(),
+        #         transforms.Normalize(*stats),
+        #     ]
+        # )
+        # pokemon_test_transfroms = transforms.Compose(
+        #     [
+        #         transforms.Resize((224)),
+        #         transforms.ToTensor(),
+        #         transforms.Normalize(*stats),
+        #     ]
+        # )
+        dataset = ImageFolder("/home/xtreme/runs/data/pokemon/", pokemon_train_transforms)
+        random_seed = 80
+        manual_seed(random_seed)
+
+        val_size = floor((len(dataset))*.10)
+        train_size = len(dataset) - val_size
+
+        train_ds, val_ds = random_split(dataset, [train_size, val_size])
+        len(train_ds), len(val_ds)
+        train_dl = DataLoader(train_ds, batch_size, shuffle=True, num_workers=2, pin_memory=True)
+        valid_dl = DataLoader(val_ds, batch_size, num_workers=2, pin_memory=True)
+        return train_dl, valid_dl
+        
+
+        
+        
+
 
 
 # def test():
