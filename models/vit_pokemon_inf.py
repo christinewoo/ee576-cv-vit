@@ -172,6 +172,35 @@ trainer = pl.Trainer(
     logger=logger,
 )
 
+def predict_pokemon(img_path):
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    ckpt_name = "epoch=4-step=480.ckpt"
+    model = PokeModel.load_from_checkpoint(
+        os.path.join(
+            "C:/study/ee576/project/ee576-cv-vit/models/logs/pokemon/version_4/checkpoints",
+            ckpt_name,
+        )
+    )
+    # feature_extractor = ViTImageProcessor.from_pretrained(
+    #     "google/vit-base-patch16-224"
+    # )  # resizes and normalizes
+    img = Image.open(img_path).convert("RGB")
+    data = pokemon_train_transforms(img)
+    data = data[None, :].to(device)  # expand dimension
+    output = model(data)
+    predicted_id = output.logits.argmax(-1).item()
+    print(f"Predicted ID: {predicted_id}")
+
+    # Map to image
+    # import matplotlib.pyplot as plt
+    pokemon_list = os.listdir(data_root)
+    pred_pokemon_dir = pokemon_list[predicted_id]
+    pred_pokemon = os.listdir(os.path.join(data_root, pred_pokemon_dir))
+    pred_img = os.path.join(data_root, pokemon, pred_pokemon[0])
+    imgp = Image.open(pred_img).convert("RGB")
+    # imgp.show()
+    return imgp, pred_pokemon
+
 if __name__ == "__main__":
     ### Train Model ###
     # trainer.fit(PokeModel)

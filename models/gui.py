@@ -2,6 +2,7 @@ import tkinter as tk
 import math
 from tkinter import filedialog
 from PIL import Image, ImageTk
+import vit_pokemon_inf
 
 window = tk.Tk()
 window.title('ViT Pokemon Classifer')
@@ -11,6 +12,7 @@ window.configure(background='white')
 def load_image():
     file_path = filedialog.askopenfilename(filetypes=[("Image files", "*.jpg *.jpeg *.png *.gif")])
     if file_path:
+        image, pokemon_name = vit_pokemon_inf(file_path)
         image = Image.open(file_path)
         max_width = 800
         max_height = 600
