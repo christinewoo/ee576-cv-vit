@@ -172,6 +172,7 @@ trainer = pl.Trainer(
     logger=logger,
 )
 
+
 def predict_pokemon(img_path):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     ckpt_name = "epoch=4-step=480.ckpt"
@@ -190,16 +191,17 @@ def predict_pokemon(img_path):
     output = model(data)
     predicted_id = output.logits.argmax(-1).item()
     print(f"Predicted ID: {predicted_id}")
-
+    data_root = "C:/study/ee576/project/data/PokemonData"
     # Map to image
     # import matplotlib.pyplot as plt
     pokemon_list = os.listdir(data_root)
     pred_pokemon_dir = pokemon_list[predicted_id]
     pred_pokemon = os.listdir(os.path.join(data_root, pred_pokemon_dir))
-    pred_img = os.path.join(data_root, pokemon, pred_pokemon[0])
+    pred_img = os.path.join(data_root, pred_pokemon_dir, pred_pokemon[0])
     imgp = Image.open(pred_img).convert("RGB")
     # imgp.show()
-    return imgp, pred_pokemon
+    return imgp, pred_pokemon_dir
+
 
 if __name__ == "__main__":
     ### Train Model ###
