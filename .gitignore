@@ -5,3 +5,4 @@ pretrained/
 *.txt
 models/logs/
 .vscode/
+logs/

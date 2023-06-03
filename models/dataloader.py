@@ -217,11 +217,7 @@ def getDataLoader(dataset_name, batch_size=1):
         stats = ((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
         pokemon_train_transforms = transforms.Compose(
             [
-<<<<<<< HEAD
                 transforms.Resize((320, 320)),  # debug
-=======
-                transforms.Resize((320, 320)),#debug
->>>>>>> bf6ef792d3bffdde793575b05591f2c98330d127
                 transforms.RandomHorizontalFlip(),
                 transforms.RandomCrop((224, 224)),
                 transforms.RandomPerspective(),
@@ -243,13 +239,10 @@ def getDataLoader(dataset_name, batch_size=1):
         #         transforms.Normalize(*stats),
         #     ]
         # )
-<<<<<<< HEAD
+
         dataset = ImageFolder(
             "C:/study/ee576/project/data/PokemonData", pokemon_train_transforms
         )
-=======
-        dataset = ImageFolder("C:/study/ee576/project/data/PokemonData", pokemon_train_transforms)
->>>>>>> bf6ef792d3bffdde793575b05591f2c98330d127
         random_seed = 80
         manual_seed(random_seed)
 
