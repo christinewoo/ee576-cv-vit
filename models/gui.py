@@ -17,8 +17,8 @@ def load_image():
     if file_path:
         image, pokemon_name = vit_pokemon_inf.predict_pokemon(file_path)
         # image = Image.open(file_path)
-        max_width = 800
-        max_height = 600
+        max_width = 600
+        max_height = 450
         width, height = image.size
         aspect_ratio = width / height
         if width > max_width or height > max_height:

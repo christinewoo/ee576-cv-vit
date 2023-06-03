@@ -1,3 +1,4 @@
+import os
 import numpy as np
 from tqdm import tqdm, trange
 import torch
@@ -12,8 +13,6 @@ from dataloader import getDataLoader
 
 np.random.seed(0)
 torch.manual_seed(0)
-
-import os
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
@@ -103,9 +102,9 @@ class MSA(nn.Module):
         return torch.cat([torch.unsqueeze(r, dim=0) for r in result])
 
 
-class MyViTBlock(nn.Module):
+class TransformerBlock(nn.Module):
     def __init__(self, hidden_d, n_heads, mlp_ratio=4):
-        super(MyViTBlock, self).__init__()
+        super(TransformerBlock, self).__init__()
         self.hidden_d = hidden_d
         self.n_heads = n_heads
 
@@ -167,9 +166,6 @@ class ViT(nn.Module):
             [MyViTBlock(hidden_d, n_heads) for _ in range(n_blocks)]
         )
 
-        # Residual?
-        # self.to_latent = nn.Identity()
-
         # Classification MLPk
         self.mlp = nn.Sequential(nn.Linear(self.hidden_d, out_d), nn.Softmax(dim=-1))
 
@@ -194,9 +190,6 @@ class ViT(nn.Module):
         # Getting the classification token only
         out = out[:, 0]
 
-        # Residual
-        # out = self.to_latent(out)
-
         return self.mlp(out)
 
 
@@ -212,7 +205,6 @@ def main():
         f"({torch.cuda.get_device_name(device)})" if torch.cuda.is_available() else "",
     )
 
-    # (3, 224, 224)
     model = ViT(
         (3, 32, 32), n_patch=8, n_blocks=6, hidden_d=64, n_heads=2, out_d=10
     ).to(device)
