@@ -59,7 +59,7 @@ self-attention mechanisms. In this project, we developed a ViT model from scratc
  performance of the model that we developed from scratch and the pre-trained model.
 \end{abstract}
 
-\section{Related work-Pei-Hsuan}
+\section{Related works}
 The field of computer vision has witnessed significant advancements in recent years, 
 particularly in the domain of image classification. Traditional approaches for image 
 classification heavily relied on convolutional neural networks (CNNs) such as AlexNet 
@@ -132,16 +132,29 @@ ViT encoder for the 150 classes in the Pokemon dataset.
 
 \subsection{Dataloader} % include dataset information
 
-%The version of the paper submitted for review should have ``Anonymous Author(s)'' as the author of the paper.
+1. cifar-10
 
-For the final version, authors' names are
-set in boldface, and each name is centered above the corresponding
-address. The lead author's name is to be listed first (left-most), and
-the co-authors' names (if different address) are set to follow. If
-there is only one co-author, list both author and co-author side by side.
+This dataset contains 60,000 32x32 color images with 10 different classes. The 10 different 
+classes represent airplanes, birds, dogs, cars, cats, deers, frogs, horses, ships, and trucks 
+and there are 6,000 images of each class. We use 45,000 images as the training dataset, 
+5,000 images as the validation dataset, and 10,000 as the test dataset.
 
-Please pay special attention to the instructions in section \ref{others}
-regarding figures, tables, acknowledgments, and references.
+The type of our algorithm's input is Datast in PyTorch. We used the build-in function 
+tourchvision.datasets.CIFAR10 to download the dataset from the Internet and randomly split 
+the entire dataset into the training, validation, and test dataset. 
+
+2. 7,000 Labeled Pokemon
+
+This dataset contains 6837 images with 150 different Pokemon. There are around 25 - 50 
+images for each Pokemon. All of the images with the Pokemon in the center. We use 90\% of 
+the dataset for training and 10\% of the dataset for testing.
+
+We download the dataset from Kaggle. In the entire dataset, there are many folders that 
+are named after one of the Pokemon's names. In each folder, there are several pictures 
+of that Pokemon. We use torchvision.dataset.ImageFolder to open this dataset and turn it 
+into Dataset in PyTorch. Then we randomly split that dataset into training ad testing 
+dataset.
+
 
 \section{Experimental results-Ted and Christine}
 \label{headings}
@@ -237,8 +250,6 @@ final paper.
 \subsubsection*{References}
 
 \small{
-
-
 [1] Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., 
 Gomez, A. N., Kaiser, L., \& Polosukhin, I. (2017). Attention is All 
 you Need. In {\it arXiv (Cornell University)} (Vol. 30, pp. 5998-6008). 
