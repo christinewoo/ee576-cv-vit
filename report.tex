@@ -84,36 +84,6 @@ NIPS website as indicated below. Please make sure you use the current files and
 not previous versions. Tweaking the style files may be grounds for rejection.
 
 %% \subsection{Double-blind reviewing}
-
-%% This year we are doing double-blind reviewing: the reviewers will not know 
-%% who the authors of the paper are. For submission, the NIPS style file will 
-%% automatically anonymize the author list at the beginning of the paper.
-
-%% Please write your paper in such a way to preserve anonymity. Refer to
-%% previous work by the author(s) in the third person, rather than first
-%% person. Do not provide Web links to supporting material at an identifiable
-%% web site.
-
-%%\subsection{Electronic submission}
-%%
-%% \textbf{THE SUBMISSION DEADLINE IS June 5, 2015. SUBMISSIONS MUST BE LOGGED BY
-%% 23:00, June 5, 2015, UNIVERSAL TIME}
-
-%% You must enter your submission in the electronic submission form available at
-%% the NIPS website listed above. You will be asked to enter paper title, name of
-%% all authors, keyword(s), and data about the contact
-%% author (name, full address, telephone, fax, and email). You will need to
-%% upload an electronic (postscript or pdf) version of your paper.
-
-%% You can upload more than one version of your paper, until the
-%% submission deadline. We strongly recommended uploading your paper in
-%% advance of the deadline, so you can avoid last-minute server congestion.
-%%
-%% Note that your submission is only valid if you get an e-mail
-%% confirmation from the server. If you do not get such an e-mail, please
-%% try uploading again. 
-
-
 \subsection{Retrieval of style files}
 
 The style files for NIPS and other conference information are available on the World Wide Web at
@@ -134,48 +104,53 @@ your own. The file
 The formatting instructions contained in these style files are summarized in
 sections \ref{gen_inst}, \ref{headings}, and \ref{others} below.
 
-%% \subsection{Keywords for paper submission}
-%% Your NIPS paper can be submitted with any of the following keywords (more than one keyword is possible for each paper):
-
-%% \begin{verbatim}
-%% Bioinformatics
-%% Biological Vision
-%% Brain Imaging and Brain Computer Interfacing
-%% Clustering
-%% Cognitive Science
-%% Control and Reinforcement Learning
-%% Dimensionality Reduction and Manifolds
-%% Feature Selection
-%% Gaussian Processes
-%% Graphical Models
-%% Hardware Technologies
-%% Kernels
-%% Learning Theory
-%% Machine Vision
-%% Margins and Boosting
-%% Neural Networks
-%% Neuroscience
-%% Other Algorithms and Architectures
-%% Other Applications
-%% Semi-supervised Learning
-%% Speech and Signal Processing
-%% Text and Language Applications
-
-%% \end{verbatim}
-
-\section{Algorithm-Ted and Christine, DataLoader-Pei-Hsuan}
+\section{Technical Description-Ted and Christine, DataLoader-Pei-Hsuan}
 \label{gen_inst}
 
-The text must be confined within a rectangle 5.5~inches (33~picas) wide and
-9~inches (54~picas) long. The left margin is 1.5~inch (9~picas).
-Use 10~point type with a vertical spacing of 11~points. Times New Roman is the
-preferred typeface throughout. Paragraphs are separated by 1/2~line space,
-with no indentation.
+% ALGORITHM
+Our goal of this project is to learn the ViT architecture, implement from scratch, and
+perform image classification on 150 different Pokemon. Below, we describe the individual 
+moduals in our self-implemented ViT.
 
-Paper title is 17~point, initial caps/lower case, bold, centered between
-2~horizontal rules. Top rule is 4~points thick and bottom rule is 1~point
-thick. Allow 1/4~inch space above and below title to rules. All pages should
-start at 1~inch (6~picas) from the top of the page.
+\subsection{Algorithm by Step}
+
+1. This module takes in a 2D image with shape HWC and flattens the image into 2D patches each with shape $N * (P * P * C)$.
+Here $N = {H * W} / {P^2}$, which is the number of patches, and $P$ is the number of pixels for each image patch.
+
+2. We map the flattened patches to a dimension $D$, where $D$ is the constant latent vector size throughout the transformer layers.
+These traininable linear projection outputs are the patch embeddings.
+We prepend a class token in front of each patch embedding to serve as the image representation that will later be used in the
+classification head at the end of the model. Lastly, to retain the positional information of each patch relative to the original image,
+a 1D learnable positional embeddings are added.
+
+3. The transformer block, shown below in Fig. 2, takes embedded patches as inputs and passes them a multi-headed self-attention layer (MSA)
+followed by a MLP block with two layers and a GELU non-linearity layer. Before the MSA and MLP blocks, a block of Layernorm is added.
+Additionally, there are residual connections after every block.
+
+4. The multi-head self-attention module takes in the embedded sequence of tokens and computes the global self-attention.
+For each token, it is mapped to $v$, $k$, and $q$ and passed into the scaled dot-product attention head.
+The scaled dot product is used to compare the "query" with the "keys" and get scores for the "values."
+Each of the scores is in short the relevance between the "query" and each "key".
+We reweight the "values" with the obtained scores and take the summation of the reweighted "values".
+Lastly, it is concatenated and passed into another linear layer for information flow, which helps to mix the information captured by each head.
+
+5. The classification head is implemented with a MLP consisting of one hidden layer during pre-train.
+During the fine-tuning stage, the MLP will consist of one single linear layer.
+
+
+
+% Pre-train
+\subsection{Pretrained Model}
+For Transformers, and other self-attention-based architectures, the training usually consists of pre-training on 
+a large dataset, such as a large text corpus for natural language processing tasks, and then fine-tune on a 
+task-specific dataset. In our case, we want to perform image classification, therefore we used the pre-trained weights
+released on Hugging Face. The pretrained weight we have used is "vit-base-patch16-224". It is a ViT model pre-trained
+on ImageNet-21k, which consists of 14 millioin images and 21,843 classes. Each of the image has resolution 224x224.
+Through this pre-training, the model learns the representation of images that can be used to extract features for the
+fine-tune task. The fine-tune training trains a Pokemon classifier by adding a linear layer on top of the pre-trained
+ViT encoder for the 150 classes in the Pokemon dataset.
+
+\subsection{Dataloader} % include dataset information
 
 %The version of the paper submitted for review should have ``Anonymous Author(s)'' as the author of the paper.
 
@@ -190,69 +165,47 @@ regarding figures, tables, acknowledgments, and references.
 
 \section{Experimental results-Ted and Christine}
 \label{headings}
+We train our from-scratch ViT model on a GTX3060 GPU with the CIFAR-10 dataset. There are 50,000 RGB training images
+with resolution 32x32. The use a batch size of 32, learning rate of 0.0002. The number of hidden dimension is 128,
+number of heads is 4, and the number of transformer blocks is 4. We train the model for 30 epochs. Our PokemonClassifier
+that utilizes the pre-trained weights on ImageNet-21K was trained on a GTX3060 GPU, with batch size of 16 and learning 
+rate of $5 * 10^{-5}$ for 5 epochs. 
 
-First level headings are lower case (except for first word and proper nouns),
-flush left, bold and in point size 12. One line space before the first level
-heading and 1/2~line space after the first level heading.
+We present our experimental results for the from-scratch model and pretrained model, respectively:
 
-\subsection{Headings: second level}
+% \subsection{Experimental Results for Model from Scratch}
 
-Second level headings are lower case (except for first word and proper nouns),
-flush left, bold and in point size 10. One line space before the second level
-heading and 1/2~line space after the second level heading.
+\begin{table}[ht]
+  \centering
+    \begin{tabular}{ c | c | c | c | c  | c | c }
+      \hline
+      Image Size & Learning Rates & Hidden Dimension & Heads & Number of Blocks & Epoch & Accuracy \\ \hline
+      3 x 32 x 32 & 0.0002 & 128 & 4 & 4 & 30 & 62.64\% \\ \hline
+      3 x 32 x 32 & 0.001 & 64 & 2 & 6 & 20 & 57.94\% \\ \hline
+    \end{tabular}
+    \caption{Best Training Results of the Model from Scratch}
+  \label{tab:my_label}
+\end{table}
 
-\subsubsection{Headings: third level}
 
-Third level headings are lower case (except for first word and proper nouns),
-flush left, bold and in point size 10. One line space before the third level
-heading and 1/2~line space after the third level heading.
+% \subsubsection{Experimental Results for Pretrained Model}
+\begin{table}[ht]
+  \centering
+    \begin{tabular}{ c | c | c | c | c  | c }
+      \hline
+      Item & Epoch 1 & Epoch 2 & Epoch 3 & Epoch 4 & Epoch 5 \\ \hline
+      validation loss & 2.62 & 0.9648 & 0.5622 & 0.4275 & 0.371\\ \hline
+      validation accuracy & 0.7287  & 0.9124 & 0.9432 & 0.952 & 0.952 \\ \hline
+    \end{tabular}
+    \caption{Training Results of the Pretrained Model}
+  \label{tab:my_label}
+\end{table}
 
 \section{Discussion of results-All}
 \label{others}
 
 These instructions apply to everyone, regardless of the formatter being used.
 
-\subsection{Citations within the text}
-
-Citations within the text should be numbered consecutively. The corresponding
-number is to appear enclosed in square brackets, such as [1] or [2]-[5]. The
-corresponding references are to be listed in the same order at the end of the
-paper, in the \textbf{References} section. (Note: the standard
-\textsc{Bib\TeX} style \texttt{unsrt} produces this.) As to the format of the
-references themselves, any style is acceptable as long as it is used
-consistently.
-
-As submission is double blind, refer to your own published work in the 
-third person. That is, use ``In the previous work of Jones et al.\ [4]'',
-not ``In our previous work [4]''. If you cite your other papers that
-are not widely available (e.g.\ a journal paper under review), use
-anonymous author names in the citation, e.g.\ an author of the
-form ``A.\ Anonymous''. 
-
-
-\subsection{Footnotes}
-
-Indicate footnotes with a number\footnote{Sample of the first footnote} in the
-text. Place the footnotes at the bottom of the page on which they appear.
-Precede the footnote with a horizontal rule of 2~inches
-(12~picas).\footnote{Sample of the second footnote}
-
-\subsection{Figures}
-
-All artwork must be neat, clean, and legible. Lines should be dark
-enough for purposes of reproduction; art work should not be
-hand-drawn. The figure number and caption always appear after the
-figure. Place one line space before the figure caption, and one line
-space after the figure. The figure caption is lower case (except for
-first word and proper nouns); figures are numbered consecutively.
-
-Make sure the figure caption does not get separated from the figure.
-Leave sufficient space to avoid splitting the figure and figure caption.
-
-You may use color figures. 
-However, it is best for the
-figure captions and the paper body to make sense if the paper is printed
-either in black/white or in color.
 \begin{figure}[h]
 \begin{center}
 %\framebox[4.0in]{$\;$}
@@ -286,6 +239,8 @@ Soma             &Cell body (contains cell nucleus) \\
 \end{table}
 
 \section{Future works-Christine}
+
+
 Do not change any aspects of the formatting parameters in the style files.
 In particular, do not modify the width or length of the rectangle the text
 should fit into, and do not change font sizes (except perhaps in the
