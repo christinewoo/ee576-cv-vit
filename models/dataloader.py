@@ -10,43 +10,6 @@ from torchvision.datasets import ImageFolder
 from torch import manual_seed
 from math import floor
 
-dir_anno = "/home/xtreme/runs/data/celeba/anno/"
-
-
-def get_annotation(fnmtxt, verbose=False):
-    print("Obtaining annotations")
-    if verbose:
-        print("_" * 70)
-        print(fnmtxt)
-
-    rfile = open(dir_anno + fnmtxt, "r")
-    texts = rfile.read().split("\n")
-    rfile.close()
-
-    columns = np.array(texts[1].split(" "))
-    columns = columns[columns != ""]
-    df = []
-    for txt in tqdm(texts[2:]):
-        txt = np.array(txt.split(" "))
-        txt = txt[txt != ""]
-
-        df.append(txt)
-
-    df = pd.DataFrame(df)
-
-    if df.shape[1] == len(columns) + 1:
-        columns = ["image_id"] + list(columns)
-    df.columns = columns
-    df = df.dropna()
-    if verbose:
-        print(" Total number of annotations {}\n".format(df.shape))
-        print(df.head())
-    ## cast to integer
-    for nm in df.columns:
-        if nm != "image_id":
-            df[nm] = pd.to_numeric(df[nm], downcast="integer")
-    return df
-
 
 class celebA(Dataset):
     def __init__(self, file_list, label_list, transform=None):
@@ -62,14 +25,11 @@ class celebA(Dataset):
         img_path = "/home/xtreme/runs/data/celeba/img/" + str(self.file_list[idx])
         img = Image.open(img_path)
         img_transformed = self.transform(img)
-        # label = self.label_list[idx]
-        # if label == -1:
-        #     label = 0
         label_index = self.file_list[idx].split(".")
         label_index = label_index[0]
         label_index = int(label_index)
         label = self.label_list[label_index - 1, 1]
-        return img_transformed, int(label)  # int(self.label_list[idx])
+        return img_transformed, int(label)
 
 
 # Input: the name of dataset (celebA or cifar)
@@ -106,7 +66,6 @@ def getValDataset(dataset_name, transform):
         with open(list_path, "r") as f:
             lines = f.readlines()
             file_list = [line.strip() for line in lines]
-            # label_list = get_annotation("list_attr_celeba.txt")
             label_list = pd.read_csv(
                 "/home/xtreme/runs/data/celeba/anno/identity_CelebA.txt",
                 sep=" ",
@@ -126,7 +85,6 @@ def getTestDataset(dataset_name, transform):
         with open(list_path, "r") as f:
             lines = f.readlines()
             file_list = [line.strip() for line in lines]
-            # label_list = get_annotation("list_attr_celeba.txt")
             label_list = pd.read_csv(
                 "/home/xtreme/runs/data/celeba/anno/identity_CelebA.txt",
                 sep=" ",
@@ -147,9 +105,9 @@ def getDataLoader(dataset_name, batch_size=1):
     if dataset_name == "celebA":
         celebA_train_transforms = transforms.Compose(
             [
-                transforms.RandomResizedCrop(178),  # can try padding later
+                transforms.RandomResizedCrop(178), 
                 transforms.Resize((224, 224)),
-                transforms.ToTensor(),  # maybe can add norm for convergence
+                transforms.ToTensor(), 
                 transforms.Normalize(
                     (0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)
                 ),
@@ -182,8 +140,6 @@ def getDataLoader(dataset_name, batch_size=1):
     elif dataset_name == "cifar":
         cifar_train_transforms = transforms.Compose(
             [
-                # transforms.Resize((224, 224)),
-                # transforms.ToTensor(),
                 transforms.RandomCrop(32, padding=4),
                 transforms.Resize((32, 32)),
                 transforms.ToTensor(),
@@ -194,7 +150,6 @@ def getDataLoader(dataset_name, batch_size=1):
         )
         cifar_test_transforms = transforms.Compose(
             [
-                # transforms.Resize((224, 224)),
                 transforms.ToTensor(),
                 transforms.Normalize(
                     (0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)
@@ -226,19 +181,6 @@ def getDataLoader(dataset_name, batch_size=1):
                 transforms.Normalize(*stats, inplace=True),
             ]
         )
-        # pokemon_val_transfroms = transforms.Compose(
-        #     [
-        #         transforms.ToTensor(),
-        #         transforms.Normalize(*stats),
-        #     ]
-        # )
-        # pokemon_test_transfroms = transforms.Compose(
-        #     [
-        #         transforms.Resize((224)),
-        #         transforms.ToTensor(),
-        #         transforms.Normalize(*stats),
-        #     ]
-        # )
 
         dataset = ImageFolder(
             "C:/study/ee576/project/data/PokemonData", pokemon_train_transforms
@@ -257,38 +199,3 @@ def getDataLoader(dataset_name, batch_size=1):
         valid_dl = DataLoader(val_ds, batch_size, num_workers=2, pin_memory=True)
         return train_dl, valid_dl
 
-
-def get_pokemon_dataset():
-    pokemon_train_transforms = transforms.Compose(
-        [
-            # transforms.Resize((320, 320)),  # debug
-            # transforms.RandomHorizontalFlip(),
-            # transforms.RandomCrop((224, 224)),
-            # transforms.RandomPerspective(),
-            # transforms.RandomRotation(20),
-            transforms.ToTensor(),
-            # transforms.Normalize(*stats, inplace=True),
-        ]
-    )
-    dataset = ImageFolder(
-        "C:/study/ee576/project/data/PokemonData", pokemon_train_transforms
-    )
-    random_seed = 80
-    manual_seed(random_seed)
-
-    val_size = floor((len(dataset)) * 0.10)
-    train_size = len(dataset) - val_size
-
-    train_ds, val_ds = random_split(dataset, [train_size, val_size])
-    return train_ds, val_ds
-
-
-# def test():
-#     train = getTrainDataset("cifar")
-#     test = getTestDataset("cifar")
-#     val_size = 5000
-#     train_size = len(train) - val_size
-#     train_ds, val_ds = random_split(train, [train_size, val_size])
-
-
-# test()
