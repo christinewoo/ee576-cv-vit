@@ -60,57 +60,29 @@ self-attention mechanisms. In this project, we developed a ViT model from scratc
 \end{abstract}
 
 \section{Related work-Pei-Hsuan}
+The field of computer vision has witnessed significant advancements in recent years, 
+particularly in the domain of image classification. Traditional approaches for image 
+classification heavily relied on convolutional neural networks (CNNs) such as AlexNet 
+and VGGNet, which achieved remarkable performance on various benchmark datasets. However, 
+the emergence of Vision Transformers (ViTs) has garnered attention as a promising 
+alternative for visual recognition tasks.
 
-NIPS requires electronic submissions.  The electronic submission site is  
-\begin{center}
-   \url{http://papers.nips.cc}
-\end{center}
+The concept of Transformers was initially introduced in the field of natural language 
+processing (NLP), where it revolutionized machine translation with the Transformer model. 
+Transformer was proposed by Vaswani et al. (2017) and it becomes the state-of-the-art 
+method in NLP tasks. Inspired by this success, researchers began exploring the application 
+of Transformers in computer vision. Cordonnier et al. (2020) showed that images can express 
+any convolutional layer by applying the self-attention layer to them. Furthermore, 
+Cordonnier et al. (2020) proved that fully-attentional models can combine local behavior 
+and global attention based on input content. Dosovitskiy et al. (2021) pioneered the 
+concept of Vision Transformers by adapting the Transformer architecture for image 
+classification tasks. They demonstrated the effectiveness of ViTs on large-scale image 
+datasets like ImageNet, surpassing the performance of CNN-based models.
 
-Please read carefully the
-instructions below, and follow them faithfully.
-\subsection{Style}
-
-Papers to be submitted to NIPS 2015 must be prepared according to the
-instructions presented here. Papers may be only up to eight pages long,
-including figures. Since 2009 an additional ninth page \textit{containing only
-cited references} is allowed. Papers that exceed nine pages will not be
-reviewed, or in any other way considered for presentation at the conference.
-%This is a strict upper bound. 
-
-Please note that this year we have introduced automatic line number generation
-into the style file (for \LaTeXe and Word versions). This is to help reviewers
-refer to specific lines of the paper when they make their comments. Please do
-NOT refer to these line numbers in your paper as they will be removed from the
-style file for the final version of accepted papers.
-
-The margins in 2015 are the same as since 2007, which allow for $\approx 15\%$
-more words in the paper compared to earlier years. We are also again using 
-double-blind reviewing. Both of these require the use of new style files.
-
-Authors are required to use the NIPS \LaTeX{} style files obtainable at the
-NIPS website as indicated below. Please make sure you use the current files and
-not previous versions. Tweaking the style files may be grounds for rejection.
-
-%% \subsection{Double-blind reviewing}
-\subsection{Retrieval of style files}
-
-The style files for NIPS and other conference information are available on the World Wide Web at
-\begin{center}
-   \url{http://www.nips.cc/}
-\end{center}
-The file \verb+nips2015.pdf+ contains these 
-instructions and illustrates the
-various formatting requirements your NIPS paper must satisfy. \LaTeX{}
-users can choose between two style files:
-\verb+nips15submit_09.sty+ (to be used with \LaTeX{} version 2.09) and
-\verb+nips15submit_e.sty+ (to be used with \LaTeX{}2e). The file
-\verb+nips2015.tex+ may be used as a ``shell'' for writing your paper. All you
-have to do is replace the author, title, abstract, and text of the paper with
-your own. The file
-\verb+nips2015.rtf+ is provided as a shell for MS Word users.
-
-The formatting instructions contained in these style files are summarized in
-sections \ref{gen_inst}, \ref{headings}, and \ref{others} below.
+Since ViTs have shown promise in general image classification tasks, they may be a good 
+tool for classifying Pokemon. This report aims to investigate the application of ViTs for 
+Pokemon classification and provide insights into the performance and potential of ViTs in 
+this specialized domain.
 
 \section{Technical Description-Ted and Christine, DataLoader-Pei-Hsuan}
 \label{gen_inst}
