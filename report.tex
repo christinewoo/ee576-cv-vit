@@ -92,6 +92,12 @@ Our goal of this project is to learn the ViT architecture, implement from scratc
 perform image classification on 150 different Pokemon. Below, we describe the individual 
 moduals in our self-implemented ViT.
 
+\subsection{System Requirements}
+We used following Python Packages to facilitate our development: \\
+PyTorch [4] \\
+PyTorch-Lightning [5] \\
+Tkinter [6] \\
+
 \subsection{Algorithm by Step}
 
 1. This module takes in a 2D image with shape HWC and flattens the image into 2D patches each with shape $N * (P * P * C)$.
@@ -204,13 +210,13 @@ features or the dimensions of the dataset increase, the complexity of the model 
 
 
 \section{Future works-Christine}
+Here are some ideas that we would like to do if we had more time. We would like to inference the CIFAR-10 dataset on a CNN model to compare the performance between Transformer based and Convolutional based methods. Additionally, to improve our from scratch method, we hope to add learning rate scheduler, dropout layers, and replace some for loops for better efficiency.
 
+Lastly, in terms of some modifications on the ViT architecture, one observation is that ViT's computational complexity is quadratic to the image size. Meaning, the ViT struggles with high resolution images, which is usually the case for most image, such as autonomous driving images that are usually 720 x 1280. Another observation is that ViT uses fixed sized tokens, which are quite unsuitable in vision tasks such as object detection that needs to extract visual elements of various scales.
 
-Do not change any aspects of the formatting parameters in the style files.
-In particular, do not modify the width or length of the rectangle the text
-should fit into, and do not change font sizes (except perhaps in the
-\textbf{References} section; see below). Please note that pages should be
-numbered.
+After some  research, we found one paper that tackles some of these ideas, which is the Swin Transformer by Microsoft. The Swin Transformer utilizes patch merging to obtain hierarchical feature maps, which is similar to the downsampling concept in CNNs. Additionally, the Swin Transformer computes window based self-attention instead of gloabl attention to make the computational time increase linearly with image resolution. Shifted windows are introduced to make sure the correlations between patches within defined windows are exchanged, retaining a sense of global attention.
+
+Finally, if we were given more time, we hope to deploy our trained fine-tune Pokemon Classifier and simpe GUI for people to try!
 
 \subsubsection*{Acknowledgments}
 
@@ -236,6 +242,12 @@ Unterthiner, T., Dehghani, M., Minderer, M., Heigold, G., Gelly, S., Uszkoreit,
 J., \& Houlsby, N. (2021). An Image is Worth 16x16 Words: Transformers for Image 
 Recognition at Scale. In {\it International Conference on Learning Representations.}
 https://openreview.net/pdf?id=YicbFdNTTy
+
+[4] Pytorch. PyTorch. (n.d.). https://pytorch.org/ 
+
+[5] Pytorch Lightning. Lightning Open Source. (n.d.). https://www.pytorchlightning.ai/index.html 
+
+[6] Tkinter-Python interface to TCL/TK. Python documentation. (n.d.). https://docs.python.org/3/library/tkinter.html 
 
 }
 

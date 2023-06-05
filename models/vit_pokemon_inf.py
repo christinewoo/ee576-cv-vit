@@ -98,11 +98,13 @@ def predict_pokemon(img_path):
     # Get prediction
     output = model(data)
     predicted_id = output.logits.argmax(-1).item()
-    pred_pokemon_name = os.listdir(data_root)[predicted_id]
+    pred_pokemon_name = os.listdir(PokemonModel.data_root)[predicted_id]
     print(f"Predicted Pokemon: {pred_pokemon_name}")
 
     # Map predicted_id to image
-    pred_pokemon_imgs = os.listdir(os.path.join(data_root, pred_pokemon_name))
+    pred_pokemon_imgs = os.listdir(
+        os.path.join(PokemonModel.data_root, pred_pokemon_name)
+    )
     pred_img_path = os.path.join(
         PokemonModel.data_root, pred_pokemon_name, pred_pokemon_imgs[0]
     )
