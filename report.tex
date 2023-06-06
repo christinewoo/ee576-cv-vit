@@ -60,7 +60,7 @@ self-attention mechanisms. In this project, we developed a ViT model from scratc
  performance of the model that we developed from scratch and the pre-trained model.
 \end{abstract}
 
-\section{Related works}
+\section{Related Works}
 The field of computer vision has witnessed significant advancements in recent years, 
 particularly in the domain of image classification. Traditional approaches for image 
 classification heavily relied on convolutional neural networks (CNNs) such as AlexNet 
@@ -167,7 +167,7 @@ into Dataset in PyTorch. Then we randomly split that dataset into training ad te
 dataset.
 
 
-\section{Experimental results}
+\section{Experimental Results}
 \label{headings}
 We train our from-scratch ViT model on a GTX3060 GPU with the CIFAR-10 dataset. There are 50,000 RGB training images
 with resolution 32x32. The use a batch size of 32, learning rate of 0.0002. The number of hidden dimension is 128,
@@ -211,9 +211,25 @@ The application can take in an image and find our the most similar pokemon based
 on the pretrained model we have in hand.
 The output of the application would be in the format of the matched pokemon image it found,
 following the name of the pokemon.
+\begin{figure}[h]
+\begin{center}
+% \framebox[4.0in]{$\;$}
+% \fbox{\rule[-.5cm]{0cm}{4cm} \rule[-.5cm]{4cm}{0cm}}
+\includegraphics[width=8cm]{gui_process.png}
+\end{center}
+\caption{Select Input Image to the GUI}
+\end{figure}
+\begin{figure}[h]
+\begin{center}
+% \framebox[4.0in]{$\;$}
+% \fbox{\rule[-.5cm]{0cm}{4cm} \rule[-.5cm]{4cm}{0cm}}
+\includegraphics[width=8cm]{gui_result.png}
+\end{center}
+\caption{GUI Output Result}
+\end{figure}
 
 
-\section{Discussion of results}
+\section{Discussion of Results}
 From the results of our from-scratch ViT model, we can see that the model learns bettern
 when there are slower learning rate and  more deep hidden layers. 
 From the pretrained model, we can see that ViT works better when it is trained a a larger 
@@ -222,7 +238,7 @@ Another point to note is that the dataset itself would affect the results of the
 features or the dimensions of the dataset increase, the complexity of the model would quickly increase.  
 
 
-\section{Future works}
+\section{Future Works}
 Here are some ideas that we would like to do if we had more time. We would like to inference the CIFAR-10 dataset on a CNN model to compare the performance between Transformer based and Convolutional based methods. Additionally, to improve our from scratch method, we hope to add learning rate scheduler, dropout layers, and replace some for loops for better efficiency.
 
 Lastly, in terms of some modifications on the ViT architecture, one observation is that ViT's computational complexity is quadratic to the image size. Meaning, the ViT struggles with high resolution images, which is usually the case for most image, such as autonomous driving images that are usually 720 x 1280. Another observation is that ViT uses fixed sized tokens, which are quite unsuitable in vision tasks such as object detection that needs to extract visual elements of various scales.
