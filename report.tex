@@ -52,12 +52,15 @@ Seattle, WA 98105 \\
 In this report, we present a comprehensive study on the application of Vision Transformers 
 (ViTs) for the task of Pokemon classification. While convolutional neural networks (CNNs) 
 have been widely used, the ViT has recently emerged as a promising alternative due to the 
-self-attention mechanisms. In this project, we developed a ViT model from scratch to explore
- the functionality of the ViT. The ViT model captures spatial relationships using 
- self-attention mechanisms, enabling it to learn both local and global features. 
- In addition, we fine-tuned a pre-trained model, which was pre-trained on ImageNet-21k at 
- resolution 224x224, to increase the accuracy of our model. Lastly, we discussed the 
- performance of the model that we developed from scratch and the pre-trained model.
+self-attention mechanisms. In this project, we implement a ViT model from scratch to explore
+the functionality of the ViT. The ViT model captures spatial relationships using 
+self-attention mechanisms, enabling it to learn both local and global features. 
+In addition, we create a Pokemon Classifier by using a pre-trained ViT model and fine-tuned on
+a Pokemon dataset, where the pre-trained model was trained on ImageNet-21k with image resolution 224x224. 
+With the help of the pre-train model we obtain about $94\%$ accuracy on our Pokemon Classifier. Next, 
+we will discuss the performance of our ViT model that we implement from scratch and our Pokemon Classifier.
+Finally, we will wrap up with some discussion on future works. \\
+Our code can be found here: https://github.com/christinewoo/ee576-cv-vit
 \end{abstract}
 
 \section{Related Works}
@@ -70,12 +73,12 @@ alternative for visual recognition tasks.
 
 The concept of Transformers was initially introduced in the field of natural language 
 processing (NLP), where it revolutionized machine translation with the Transformer model. 
-Transformer was proposed by Vaswani et al. (2017) and it becomes the state-of-the-art 
+Transformer was proposed by Vaswani et al(2017)[1]. and it becomes the state-of-the-art 
 method in NLP tasks. Inspired by this success, researchers began exploring the application 
-of Transformers in computer vision. Cordonnier et al. (2020) showed that images can express 
+of Transformers in computer vision. Cordonnier et al(2020)[2]. showed that images can express 
 any convolutional layer by applying the self-attention layer to them. Furthermore, 
-Cordonnier et al. (2020) proved that fully-attentional models can combine local behavior 
-and global attention based on input content. Dosovitskiy et al. (2021) pioneered the 
+Cordonnier et al(2020)[2]. proved that fully-attentional models can combine local behavior 
+and global attention based on input content. Dosovitskiy et al(2021)[3]. pioneered the 
 concept of Vision Transformers by adapting the Transformer architecture for image 
 classification tasks. They demonstrated the effectiveness of ViTs on large-scale image 
 datasets like ImageNet, surpassing the performance of CNN-based models.
@@ -91,7 +94,7 @@ this specialized domain.
 % ALGORITHM
 Our goal of this project is to learn the ViT architecture, implement from scratch, and
 perform image classification on 150 different Pokemon. Below, we describe the individual 
-moduals in our self-implemented ViT.
+modules in our self-implemented ViT.
 
 \subsection{System Requirements}
 We used following Python Packages to facilitate our development: \\
@@ -99,17 +102,17 @@ PyTorch [4] \\
 PyTorch-Lightning [5] \\
 Tkinter [6] \\
 
-In this project, we used two different types of GPUs for experiments.
-For Cifar-10 dataset, we trained the model on 2 GTX 2080 Ti cards at a lab Linux machine. \\
-For Pokemon dataset, we trained the model on a single GTX 3060 card at a personal Windows 11 macine.
+In this project, we used two different types of GPUs to train our two models.
+We pre-train our self-implemented ViT model on the CIFAR-10 dataset with two NVIDIA GeForce RTX 2080 Ti cards on a Linux machine. \\
+We fine-tune on a ImageNet-21k pre-trained model on the Pokemon dataset with a single GeForce RTX 3060 card on a Windows 11 laptop.
 
 \subsection{Algorithm by Step}
 
-1. This module takes in a 2D image with shape HWC and flattens the image into 2D patches each with shape $N * (P * P * C)$.
+1. This module takes in a 2D image with shape $HxWxC$ and flattens the image into 2D patches each with shape $N * (P * P * C)$.
 Here $N = {H * W} / {P^2}$, which is the number of patches, and $P$ is the number of pixels for each image patch.
 
 2. We map the flattened patches to a dimension $D$, where $D$ is the constant latent vector size throughout the transformer layers.
-These traininable linear projection outputs are the patch embeddings.
+These trainable linear projection outputs are the patch embeddings.
 We prepend a class token in front of each patch embedding to serve as the image representation that will later be used in the
 classification head at the end of the model. Lastly, to retain the positional information of each patch relative to the original image,
 a 1D learnable positional embeddings are added.
@@ -131,11 +134,11 @@ During the fine-tuning stage, the MLP will consist of one single linear layer.
 
 
 % Pre-train
-\subsection{Pretrained Model}
+\subsection{Pre-trained Model}
 For Transformers, and other self-attention-based architectures, the training usually consists of pre-training on 
 a large dataset, such as a large text corpus for natural language processing tasks, and then fine-tune on a 
 task-specific dataset. In our case, we want to perform image classification, therefore we used the pre-trained weights
-released on Hugging Face. The pretrained weight we have used is "vit-base-patch16-224". It is a ViT model pre-trained
+released on Hugging Face. The pre-trained weight we have used is "vit-base-patch16-224". It is a ViT model pre-trained
 on ImageNet-21k, which consists of 14 millioin images and 21,843 classes. Each of the image has resolution 224x224.
 Through this pre-training, the model learns the representation of images that can be used to extract features for the
 fine-tune task. The fine-tune training trains a Pokemon classifier by adding a linear layer on top of the pre-trained
@@ -143,7 +146,7 @@ ViT encoder for the 150 classes in the Pokemon dataset.
 
 \subsection{Dataloader} % include dataset information
 
-1. cifar-10
+1. CIFAR-10
 
 This dataset contains 60,000 32x32 color images with 10 different classes. The 10 different 
 classes represent airplanes, birds, dogs, cars, cats, deers, frogs, horses, ships, and trucks 
@@ -169,13 +172,13 @@ dataset.
 
 \section{Experimental Results}
 \label{headings}
-We train our from-scratch ViT model on a GTX3060 GPU with the CIFAR-10 dataset. There are 50,000 RGB training images
-with resolution 32x32. The use a batch size of 32, learning rate of 0.0002. The number of hidden dimension is 128,
-number of heads is 4, and the number of transformer blocks is 4. We train the model for 30 epochs. Our PokemonClassifier
-that utilizes the pre-trained weights on ImageNet-21K was trained on a GTX3060 GPU, with batch size of 16 and learning 
-rate of $5 * 10^{-5}$ for 5 epochs. 
+We train our self-implemented ViT model with the CIFAR-10 dataset. It consists of 50,000 RGB training images
+and 10,000 test images, both with image resolution 32x32. We use a batch size of 32 and learning rate of 0.0002. The number of 
+hidden dimension is set to 128, number of heads is 4, and the number of transformer blocks is 4. We train the model for 30 
+epochs. Our Pokemon Classifier was pre-trained on ImageNet-21K and fine-tuned on the Pokemon dataset. We use a 
+batch size of 16, learning rate of $5 * 10^{-5}$, and trained for 5 epochs.
 
-We present our experimental results for the from-scratch model and pretrained model, respectively:
+We present our experimental results for the self-implemented ViT model and the Pokemon Classifier, respectively:
 
 % \subsection{Experimental Results for Model from Scratch}
 
@@ -207,10 +210,11 @@ We present our experimental results for the from-scratch model and pretrained mo
 
 \subsection{GUI Development}
 We used Python Tkinter package to develop the GUI application of the model.
-The application can take in an image and find our the most similar pokemon based 
-on the pretrained model we have in hand.
-The output of the application would be in the format of the matched pokemon image it found,
-following the name of the pokemon.
+Our Pokemon Classifier application takes in a RGB image and inference on the best checkpoint.
+The predicted result will be the label of the Pokemon class that has the most similar feature 
+as the input image.
+The application then outputs an image of the corresponding Pokemon label predicted,
+along with the name of the Pokemon.
 \begin{figure}[h]
 \begin{center}
 % \framebox[4.0in]{$\;$}
@@ -230,29 +234,40 @@ following the name of the pokemon.
 
 
 \section{Discussion of Results}
-From the results of our from-scratch ViT model, we can see that the model learns bettern
-when there are slower learning rate and  more deep hidden layers. 
-From the pretrained model, we can see that ViT works better when it is trained a a larger 
-dataset.
+From the results of our self-implemented ViT model, we can see that the model learns better with
+a smaller learning rate and deeper hidden layers. Note that the number of hidden dim, the number 
+of heads, and the number of blocks should not be too big, since it will quickly increase the complexity
+of our model.
+After obtaining around 62.64\% for pre-training and 95.2\% on our fine-tuned Pokemon Classifier, 
+we can see that ViT indeed works better when it is pre-trained on a general large image classification dataset
+before fine-tuning on a smaller task-specific dataset.
 Another point to note is that the dataset itself would affect the results of the model. As the 
-features or the dimensions of the dataset increase, the complexity of the model would quickly increase.  
+features or the number of channels of each image increase, the complexity of the model would quickly increase.  
 
 
 \section{Future Works}
-Here are some ideas that we would like to do if we had more time. We would like to inference the CIFAR-10 dataset on a CNN model to compare the performance between Transformer based and Convolutional based methods. Additionally, to improve our from scratch method, we hope to add learning rate scheduler, dropout layers, and replace some for loops for better efficiency.
+Here are some ideas that we would like to do if we had more time. We would like to inference 
+the CIFAR-10 dataset on a CNN model to compare the performance between Transformer based and 
+Convolutional based methods. Additionally, to improve our from scratch method, we hope to add 
+learning rate scheduler, dropout layers, and replace some for loops for better efficiency.
 
-Lastly, in terms of some modifications on the ViT architecture, one observation is that ViT's computational complexity is quadratic to the image size. Meaning, the ViT struggles with high resolution images, which is usually the case for most image, such as autonomous driving images that are usually 720 x 1280. Another observation is that ViT uses fixed sized tokens, which are quite unsuitable in vision tasks such as object detection that needs to extract visual elements of various scales.
+Lastly, in terms of some modifications on the ViT architecture, one observation is that ViT's 
+computational complexity is quadratic to the image size. Meaning, the ViT struggles with high 
+resolution images, which is usually the case for most image, such as autonomous driving images 
+that are usually 720 x 1280. Another observation is that ViT uses fixed sized tokens, which are 
+quite unsuitable in vision tasks such as object detection that needs to extract visual elements 
+of various scales.
 
-After some  research, we found one paper that tackles some of these ideas, which is the Swin Transformer by Microsoft. The Swin Transformer utilizes patch merging to obtain hierarchical feature maps, which is similar to the downsampling concept in CNNs. Additionally, the Swin Transformer computes window based self-attention instead of gloabl attention to make the computational time increase linearly with image resolution. Shifted windows are introduced to make sure the correlations between patches within defined windows are exchanged, retaining a sense of global attention.
+After some research, we found one paper that tackles some of these ideas, which is the Swin 
+Transformer by Microsoft. The Swin Transformer utilizes patch merging to obtain hierarchical 
+feature maps, which is similar to the downsampling concept in CNNs. Additionally, the Swin 
+Transformer computes window based self-attention instead of global attention to make the 
+computational time increase linearly with image resolution. Shifted windows are introduced to 
+make sure the correlations between patches within defined windows are exchanged, retaining a 
+sense of global attention.
 
-Finally, if we were given more time, we hope to deploy our trained fine-tune Pokemon Classifier and simpe GUI for people to try!
-
-\subsubsection*{Acknowledgments}
-
-Use unnumbered third level headings for the acknowledgments. All
-acknowledgments go at the end of the paper. Do not include 
-acknowledgments in the anonymized submission, only in the 
-final paper. 
+Finally, if we were given more time, we hope to deploy our trained fine-tune Pokemon Classifier 
+and simple GUI for people to try!
 
 \subsubsection*{References}
 
