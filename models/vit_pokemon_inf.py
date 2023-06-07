@@ -23,7 +23,6 @@ pokemon_train_transforms = transforms.Compose(
     ]
 )
 
-
 # Define Image Classifier on Pokemon Dataset
 class PokemonClassifier(pl.LightningModule):
     def __init__(self):

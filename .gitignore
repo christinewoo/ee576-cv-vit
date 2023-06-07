@@ -6,3 +6,4 @@ pretrained/
 models/logs/
 .vscode/
 logs/
+runs/*

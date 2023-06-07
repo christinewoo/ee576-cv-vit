@@ -26,7 +26,6 @@ pokemon_train_transforms = transforms.Compose(
     ]
 )
 
-
 class PokemonClassifier(pl.LightningModule):
     def __init__(self):
         super().__init__()

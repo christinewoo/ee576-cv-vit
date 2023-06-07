@@ -3,9 +3,7 @@ from PIL import Image
 from torchvision.datasets import CIFAR10
 from torch.utils.data import random_split
 from torchvision import transforms
-import numpy as np
 import pandas as pd
-from tqdm import tqdm
 from torchvision.datasets import ImageFolder
 from torch import manual_seed
 from math import floor
