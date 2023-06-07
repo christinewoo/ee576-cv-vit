@@ -1,7 +1,10 @@
-## Pokemon Classifier
+# Pokemon Classifier
 
+### Dataset
 Please download [Pokemon Dataset](https://www.kaggle.com/datasets/lantian773030/pokemonclassification)
 
+
+### Environment
 This repo is tested on our local environment (python=3.11, cuda=11.7, pytorch=2.0.1), and we recommend you to use Anaconda to create a vitural environment:
 
 1. Create a conda environment:
@@ -19,7 +22,7 @@ This repo is tested on our local environment (python=3.11, cuda=11.7, pytorch=2.
 All credits for dataset and libraries goes to the owners listed in references.
 
 
-## Training, Inference, GUI
+### Training, Inference, GUI
     conda activate pokemon_vit
     cd models
 
