@@ -63,7 +63,7 @@ Finally, we will wrap up with some discussion on future works. \\
 Our code can be found here: https://github.com/christinewoo/ee576-cv-vit
 \end{abstract}
 
-\section{Related Works}
+\section{Related works}
 The field of computer vision has witnessed significant advancements in recent years, 
 particularly in the domain of image classification. Traditional approaches for image 
 classification heavily relied on convolutional neural networks (CNNs) such as AlexNet 
@@ -88,7 +88,7 @@ tool for classifying Pokemon. This report aims to investigate the application of
 Pokemon classification and provide insights into the performance and potential of ViTs in 
 this specialized domain.
 
-\section{Technical Description, DataLoader}
+\section{Technical description and data loader}
 \label{gen_inst}
 
 % ALGORITHM
@@ -96,7 +96,7 @@ Our goal of this project is to learn the ViT architecture, implement from scratc
 perform image classification on 150 different Pokemon. Below, we describe the individual 
 modules in our self-implemented ViT.
 
-\subsection{System Requirements}
+\subsection{System requirements}
 We used following Python Packages to facilitate our development: \\
 PyTorch [4] \\
 PyTorch-Lightning [5] \\
@@ -106,7 +106,7 @@ In this project, we used two different types of GPUs to train our two models.
 We pre-train our self-implemented ViT model on the CIFAR-10 dataset with two NVIDIA GeForce RTX 2080 Ti cards on a Linux machine. \\
 We fine-tune on a ImageNet-21k pre-trained model on the Pokemon dataset with a single GeForce RTX 3060 card on a Windows 11 laptop.
 
-\subsection{Algorithm by Step}
+\subsection{Algorithm by step}
 
 1. This module takes in a 2D image with shape $HxWxC$ and flattens the image into 2D patches each with shape $N * (P * P * C)$.
 Here $N = {H * W} / {P^2}$, which is the number of patches, and $P$ is the number of pixels for each image patch.
@@ -134,7 +134,7 @@ During the fine-tuning stage, the MLP will consist of one single linear layer.
 
 
 % Pre-train
-\subsection{Pre-trained Model}
+\subsection{Pre-trained model}
 For Transformers, and other self-attention-based architectures, the training usually consists of pre-training on 
 a large dataset, such as a large text corpus for natural language processing tasks, and then fine-tune on a 
 task-specific dataset. In our case, we want to perform image classification, therefore we used the pre-trained weights
@@ -170,7 +170,7 @@ into Dataset in PyTorch. Then we randomly split that dataset into training ad te
 dataset.
 
 
-\section{Experimental Results}
+\section{Experimental results}
 \label{headings}
 We train our self-implemented ViT model with the CIFAR-10 dataset. It consists of 50,000 RGB training images
 and 10,000 test images, both with image resolution 32x32. We use a batch size of 32 and learning rate of 0.0002. The number of 
@@ -208,7 +208,7 @@ We present our experimental results for the self-implemented ViT model and the P
   \label{tab:my_label}
 \end{table}
 
-\subsection{GUI Development}
+\subsection{GUI development}
 We used Python Tkinter package to develop the GUI application of the model.
 Our Pokemon Classifier application takes in a RGB image and inference on the best checkpoint.
 The predicted result will be the label of the Pokemon class that has the most similar feature 
@@ -233,7 +233,7 @@ along with the name of the Pokemon.
 \end{figure}
 
 
-\section{Discussion of Results}
+\section{Discussion of results}
 From the results of our self-implemented ViT model, we can see that the model learns better with
 a smaller learning rate and deeper hidden layers. Note that the number of hidden dim, the number 
 of heads, and the number of blocks should not be too big, since it will quickly increase the complexity
@@ -245,7 +245,7 @@ Another point to note is that the dataset itself would affect the results of the
 features or the number of channels of each image increase, the complexity of the model would quickly increase.  
 
 
-\section{Future Works}
+\section{Future works}
 Here are some ideas that we would like to do if we had more time. We would like to inference 
 the CIFAR-10 dataset on a CNN model to compare the performance between Transformer based and 
 Convolutional based methods. Additionally, to improve our from scratch method, we hope to add 
