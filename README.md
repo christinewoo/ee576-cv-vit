@@ -20,10 +20,8 @@ All credits for dataset and libraries goes to the owners listed in references.
 
 
 ## Training, Inference, GUI
-    ```
     conda activate pokemon_vit
     cd models
-    ```
 
 1. Train ViT implemented from scratch
     ```
