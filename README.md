@@ -1,4 +1,7 @@
 # Pokemon Classifier
+All credits for dataset and libraries goes to the owners listed in references.
+
+## Which Pokemon are you?
 
 ### Dataset
 Please download [Pokemon Dataset](https://www.kaggle.com/datasets/lantian773030/pokemonclassification)
@@ -18,9 +21,6 @@ This repo is tested on our local environment (python=3.11, cuda=11.7, pytorch=2.
     ```bash
     conda install pytorch torchvision torchaudio pytorch-cuda=11.7 -c pytorch -c nvidia
     ```
-
-All credits for dataset and libraries goes to the owners listed in references.
-
 
 ### Training, Inference, GUI
     conda activate pokemon_vit
